@@ -33,20 +33,20 @@ RECEIPT_ITEM_LABEL_MAP = {
 }
 
 BIZCARD_LABEL_MAP = {
-    'Other': 0,
-    'PersonName': 1,
-    'Company': 2,
-    'CompanyLogo': 3,
-    'JobTitle': 4,
-    'WorkPhone': 5,
-    'Fax': 6,
-    'OtherPhone': 7,
-    'Address': 8,
-    'MobilePhone': 9,
-    'Department': 10,
-    'Email': 11,
-    'WebSite': 12,
-    'PartialPhone': 13
+    'Other': 1,
+    'PersonName': 2,
+    'Company': 3,
+    'CompanyLogo': 4,
+    'JobTitle': 5,
+    'WorkPhone': 6,
+    'Fax': 7,
+    'OtherPhone': 8,
+    'Address': 9,
+    'MobilePhone': 10,
+    'Department': 11,
+    'Email': 12,
+    'WebSite': 13,
+    'PartialPhone': 14
 }
 
 
@@ -299,6 +299,60 @@ class BizcardDataParser(DataParser):
         super().__init__()
 
 
+def convert_bizcard_to_coco_format(image_dir, json_dir, id_list, out_dir, out_name):
+    coco_json = {}
+    images = []
+    annotations = []
+    categories = []
+
+    for _, key in enumerate(BIZCARD_LABEL_MAP.keys()):
+        categories.append({
+            'id': BIZCARD_LABEL_MAP[key],
+            'name': key
+        })
+
+    with open(id_list) as fp:
+        ids = fp.readlines()
+
+    for idx, file_id in enumerate(ids):
+        file_id = Path(file_id.strip())
+        print(idx, file_id)
+
+        if not (image_dir / file_id).with_suffix('.jpg').exists():
+            file_id = file_id.with_suffix('.jpeg')
+        else:
+            file_id = file_id.with_suffix('.jpg')
+
+        height, width = cv2.imread(str(image_dir / file_id)).shape[:2]
+        images.append({
+            'file_name': str(file_id),
+            'id': idx,
+            'height': height,
+            'width': width
+        })
+
+        try:
+            gt = BizcardDataParser.parse_data(str((json_dir / file_id).with_suffix('.json')), str(image_dir / file_id))[0]
+            for word in gt.words:
+                anno = {
+                    'id': len(annotations),
+                    'image_id': idx,
+                    'bbox': [word.bbox.min_x, word.bbox.min_y, (word.bbox.max_x - word.bbox.min_x), (word.bbox.max_y - word.bbox.min_y)],
+                    'segmentation': [word.bbox.val],
+                    'category_id': word.label,
+                    'is_crowd': False
+                }
+                annotations.append(anno)
+        except:
+            print(str(image_dir / file_id))
+
+    coco_json['images'] = images
+    coco_json['annotations'] = annotations
+    coco_json['categories'] = categories
+    with open(Path(out_dir, out_name), 'w') as f:
+        json.dump(coco_json, f)
+
+
 def get_chargrid_dicts(image_dir, json_dir, id_list):
     dataset_dicts = []
     with open(id_list) as fp:
@@ -334,8 +388,6 @@ def get_chargrid_dicts(image_dir, json_dir, id_list):
         record['annotations'] = annotations
         dataset_dicts.append(record)
 
-        if idx == 10:
-            break
     return dataset_dicts
 
 
@@ -374,28 +426,57 @@ if __name__ == '__main__':
         return key
 
 
-    from detectron2.data import DatasetCatalog, MetadataCatalog
-    from detectron2.utils.visualizer import Visualizer
-    import random
+    # from detectron2.data import DatasetCatalog, MetadataCatalog
+    # from detectron2.data.datasets import register_coco_instances
+    # from detectron2.utils.visualizer import Visualizer
+    # import random
+    #
+    # for d in ["train", "val"]:
+    #     DatasetCatalog.register("balloon_" + d, lambda d=d: get_chargrid_dicts(Path('/data/training/business_card/input/source_images'),
+    #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
+    #             '/data/training/business_card/input/id_lists/20200206/train.txt'))
+    #     MetadataCatalog.get("balloon_" + d).set(thing_classes=list(BIZCARD_LABEL_MAP.keys()))
+    # balloon_metadata = MetadataCatalog.get("balloon_train")
+    # print(balloon_metadata)
+    #
+    # dataset_dicts = get_chargrid_dicts(Path('/data/training/business_card/input/source_images'),
+    #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
+    #             '/data/training/business_card/input/id_lists/20200206/train.txt')
+    # for d in random.sample(dataset_dicts, 3):
+    #     img = cv2.imread(d["file_name"])
+    #     visualizer = Visualizer(img[:, :, ::-1], metadata=balloon_metadata, scale=0.2)
+    #     vis = visualizer.draw_dataset_dict(d)
+    #     cv2.imshow('', vis.get_image()[:, :, ::-1])
+    #     cv2.waitKey(0)
 
-    for d in ["train", "val"]:
-        DatasetCatalog.register("balloon_" + d, lambda d=d: get_chargrid_dicts(Path('/data/training/business_card/input/source_images'),
-                Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
-                '/data/training/business_card/input/id_lists/20200206/train.txt'))
-        MetadataCatalog.get("balloon_" + d).set(thing_classes=list(BIZCARD_LABEL_MAP.keys()))
-    balloon_metadata = MetadataCatalog.get("balloon_train")
-    print(balloon_metadata)
-
-    dataset_dicts = get_chargrid_dicts(Path('/data/training/business_card/input/source_images'),
-                Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
-                '/data/training/business_card/input/id_lists/20200206/train.txt')
-    for d in random.sample(dataset_dicts, 3):
-        img = cv2.imread(d["file_name"])
-        visualizer = Visualizer(img[:, :, ::-1], metadata=balloon_metadata, scale=0.2)
-        vis = visualizer.draw_dataset_dict(d)
-        cv2.imshow('', vis.get_image()[:, :, ::-1])
-        cv2.waitKey(0)
+    # convert_bizcard_to_coco_format(Path('/data/training/business_card/input/source_images'),
+    #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
+    #             '/data/training/business_card/input/id_lists/20200206/train.txt', '', 'bizcard_coco.json')
 
     # view_gt_dir(Path('/data/training/business_card/input/source_images'),
     #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
     #             '/data/training/business_card/input/id_lists/20200206/train.txt')
+
+    # import random
+    # from detectron2.data.datasets import register_coco_instances
+    # from detectron2.data import get_detection_dataset_dicts
+    # from detectron2.utils.visualizer import Visualizer
+    # from detectron2.data import DatasetCatalog, MetadataCatalog
+    #
+    # register_coco_instances("my_dataset_train", {}, "bizcard_coco.json", "/data/training/business_card/input/source_images")
+    # register_coco_instances("my_dataset_val", {}, "bizcard_coco.json", "/data/training/business_card/input/source_images")
+    # for d in random.sample(get_detection_dataset_dicts(['my_dataset_train']), 3):
+    #     img = cv2.imread(d["file_name"])
+    #     visualizer = Visualizer(img[:, :, ::-1], metadata=MetadataCatalog.get('my_dataset_train'), scale=0.2)
+    #     vis = visualizer.draw_dataset_dict(d)
+    #     cv2.imshow('', vis.get_image()[:, :, ::-1])
+    #     cv2.waitKey(0)
+
+    # from PIL import Image, ImageOps
+    # image = Image.open('/data/training/business_card/input/source_images/000/Bizcard_000_273.jpg')
+    # image = ImageOps.exif_transpose(image)
+    # image = image.convert('RGB')
+    # image = np.asarray(image)
+    # print(image.shape)
+    image = cv2.imread('/data/training/business_card/input/source_images/000/Bizcard_000_273.jpg')
+    print(image.shape)
