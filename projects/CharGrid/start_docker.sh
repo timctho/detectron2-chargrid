@@ -14,5 +14,6 @@ docker run -it \
            -e DISPLAY=$(echo $DISPLAY) \
            -e QT_X11_NO_MITSHM=1 \
            -e PYTHONPATH=/detectron2/projects/CharGrid \
+           -p 6006:6006 \
            ${IMAGE} \
            /bin/bash

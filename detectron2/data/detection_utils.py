@@ -11,6 +11,7 @@ import pycocotools.mask as mask_util
 import torch
 from fvcore.common.file_io import PathManager
 from PIL import Image, ImageOps
+import cv2
 
 from detectron2.structures import (
     BitMasks,
@@ -45,29 +46,30 @@ def read_image(file_name, format=None):
     Returns:
         image (np.ndarray): an HWC image in the given format.
     """
-    with PathManager.open(file_name, "rb") as f:
-        image = Image.open(f)
-
-        # capture and ignore this bug: https://github.com/python-pillow/Pillow/issues/3973
-        try:
-            image = ImageOps.exif_transpose(image)
-        except Exception:
-            pass
-
-        if format is not None:
-            # PIL only supports RGB, so convert to RGB and flip channels over below
-            conversion_format = format
-            if format == "BGR":
-                conversion_format = "RGB"
-            image = image.convert(conversion_format)
-        image = np.asarray(image)
-        if format == "BGR":
-            # flip channels if needed
-            image = image[:, :, ::-1]
-        # PIL squeezes out the channel dimension for "L", so make it HWC
-        if format == "L":
-            image = np.expand_dims(image, -1)
-        return image
+    return cv2.imread(file_name)
+    # with PathManager.open(file_name, "rb") as f:
+    #     image = Image.open(f)
+    #
+    #     # capture and ignore this bug: https://github.com/python-pillow/Pillow/issues/3973
+    #     try:
+    #         image = ImageOps.exif_transpose(image)
+    #     except Exception:
+    #         pass
+    #
+    #     if format is not None:
+    #         # PIL only supports RGB, so convert to RGB and flip channels over below
+    #         conversion_format = format
+    #         if format == "BGR":
+    #             conversion_format = "RGB"
+    #         image = image.convert(conversion_format)
+    #     image = np.asarray(image)
+    #     if format == "BGR":
+    #         # flip channels if needed
+    #         image = image[:, :, ::-1]
+    #     # PIL squeezes out the channel dimension for "L", so make it HWC
+    #     if format == "L":
+    #         image = np.expand_dims(image, -1)
+    #     return image
 
 
 def check_image_size(dataset_dict, image):
