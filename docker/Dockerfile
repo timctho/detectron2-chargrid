@@ -24,7 +24,7 @@ RUN pip install 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=Pyt
 
 RUN pip install 'git+https://github.com/facebookresearch/fvcore'
 # install detectron2
-RUN git clone https://github.com/timctho/detectron2-chargrid detectron2_repo
+RUN git clone https://github.com/timctho/detectron2-chargrid.git detectron2_repo
 ENV FORCE_CUDA="1"
 # This will build detectron2 for all common cuda architectures and take a lot more time,
 # because inside `docker build`, there is no way to tell which architecture will be used.
