@@ -340,10 +340,12 @@ def convert_bizcard_to_coco_format(image_dir, json_dir, id_list, out_dir, out_na
                     'bbox': [word.bbox.min_x, word.bbox.min_y, (word.bbox.max_x - word.bbox.min_x), (word.bbox.max_y - word.bbox.min_y)],
                     'segmentation': [word.bbox.val],
                     'category_id': word.label,
-                    'is_crowd': False
+                    'iscrowd': 0,
+                    'area': cv2.contourArea(np.reshape(word.bbox.val, [-1, 2]).astype(np.float32))
                 }
                 annotations.append(anno)
-        except:
+        except Exception as e:
+            print(e)
             print(str(image_dir / file_id))
 
     coco_json['images'] = images
@@ -449,9 +451,12 @@ if __name__ == '__main__':
     #     cv2.imshow('', vis.get_image()[:, :, ::-1])
     #     cv2.waitKey(0)
 
-    convert_bizcard_to_coco_format(Path('/data/training/business_card/input/source_images'),
-                Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
-                '/data/training/business_card/input/id_lists/20191219/validation.txt', '', 'bizcard_coco_val.json')
+    convert_bizcard_to_coco_format(
+        Path('/data/training/business_card/input/source_images'),
+        Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
+        '/data/training/business_card/input/id_lists/20191219/validation.txt',
+        '',
+        'bizcard_coco_val.json')
 
     # view_gt_dir(Path('/data/training/business_card/input/source_images'),
     #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
