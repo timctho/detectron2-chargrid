@@ -29,4 +29,3 @@ class VizUtil(object):
                 mask[i, j, 1] = int(color_map[label][1])
                 mask[i, j, 2] = int(color_map[label][2])
         return mask
-
