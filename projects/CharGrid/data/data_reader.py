@@ -299,6 +299,65 @@ class BizcardDataParser(DataParser):
         super().__init__()
 
 
+def convert_bizcard_to_coco_format(image_dir, json_dir, id_list, out_dir, out_name):
+    coco_json = {}
+    images = []
+    annotations = []
+    categories = []
+
+    for _, key in enumerate(BIZCARD_LABEL_MAP.keys()):
+        categories.append({
+            'id': BIZCARD_LABEL_MAP[key],
+            'name': key
+        })
+
+    with open(id_list) as fp:
+        ids = fp.readlines()
+
+    for idx, file_id in enumerate(ids):
+        file_id = Path(file_id.strip())
+        mask_file_id = Path(file_id.strip())
+        embeddings_file_id = Path(file_id.strip()).with_suffix('.embeddings')
+        print(idx, file_id)
+
+        if not (image_dir / file_id).with_suffix('.jpg').exists():
+            file_id = file_id.with_suffix('.jpeg')
+        else:
+            file_id = file_id.with_suffix('.jpg')
+
+        height, width = cv2.imread(str(image_dir / file_id)).shape[:2]
+        images.append({
+            'file_name': str(file_id),
+            'id': idx,
+            'height': height,
+            'width': width,
+            'embeddings': str(embeddings_file_id),
+            'mask': str(mask_file_id),
+            'embedding_length': 256
+        })
+
+        try:
+            gt = BizcardDataParser.parse_data(str((json_dir / file_id).with_suffix('.json')), str(image_dir / file_id))[0]
+            for word in gt.words:
+                anno = {
+                    'id': len(annotations),
+                    'image_id': idx,
+                    'bbox': [word.bbox.min_x, word.bbox.min_y, (word.bbox.max_x - word.bbox.min_x), (word.bbox.max_y - word.bbox.min_y)],
+                    'segmentation': [word.bbox.val],
+                    'category_id': word.label,
+                    'is_crowd': False
+                }
+                annotations.append(anno)
+        except:
+            print(str(image_dir / file_id))
+
+    coco_json['images'] = images
+    coco_json['annotations'] = annotations
+    coco_json['categories'] = categories
+    with open(Path(out_dir, out_name), 'w') as f:
+        json.dump(coco_json, f)
+
+
 def get_chargrid_dicts(image_dir, json_dir, id_list):
     dataset_dicts = []
     with open(id_list) as fp:

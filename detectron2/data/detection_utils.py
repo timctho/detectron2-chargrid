@@ -34,7 +34,7 @@ class SizeMismatchError(ValueError):
     """
 
 
-def read_image(file_name, format=None):
+def read_image(file_name, format=cv2.IMREAD_COLOR):
     """
     Read an image into the given format.
     Will apply rotation and flipping if the image has such exif information.
@@ -46,7 +46,7 @@ def read_image(file_name, format=None):
     Returns:
         image (np.ndarray): an HWC image in the given format.
     """
-    return cv2.imread(file_name)
+    return cv2.imread(file_name, format)
     # with PathManager.open(file_name, "rb") as f:
     #     image = Image.open(f)
     #

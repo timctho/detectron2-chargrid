@@ -139,6 +139,9 @@ Category ids in annotations are not in [1, #categories]! We'll apply a mapping f
         record["height"] = img_dict["height"]
         record["width"] = img_dict["width"]
         image_id = record["image_id"] = img_dict["id"]
+        record["mask"] = os.path.join(image_root, img_dict.get("mask"))
+        record["embeddings"] = os.path.join(image_root, img_dict.get("embeddings"))
+        record["embedding_length"] = img_dict.get("embedding_length")
 
         objs = []
         for anno in anno_dict_list:
