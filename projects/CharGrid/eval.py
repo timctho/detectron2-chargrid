@@ -41,7 +41,7 @@ def main(args):
         "/data/training/business_card/input/source_images")
     register_coco_instances(
         "bizcard_val",
-        {'things_classes': list(BIZCARD_LABEL_MAP.keys())},
+        {'thing_classes': list(BIZCARD_LABEL_MAP.keys())},
         "data/bizcard_coco_val.json",
         "/data/training/business_card/input/source_images")
 
