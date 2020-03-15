@@ -14,9 +14,9 @@ from detectron2.data.datasets import register_coco_instances
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
-from data.data_reader import BIZCARD_LABEL_MAP
 import logging
 import glob
+import data
 
 
 def setup(args):
@@ -36,43 +36,32 @@ def main(args):
     cfg = setup(args)
     predictor = DefaultPredictor(cfg)
 
-    register_coco_instances(
-        "bizcard_train",
-        {},
-        "data/bizcard_coco_train.json",
-        "/data/training/business_card/input/source_images")
-    register_coco_instances(
-        "bizcard_val",
-        {'thing_classes': list(BIZCARD_LABEL_MAP.keys())},
-        "data/bizcard_coco_val.json",
-        "/data/training/business_card/input/source_images")
-
     if args.img != '':
-        show_prediction(args.img, predictor)
+        show_prediction(args.img, predictor, args.scale)
     elif args.dir != '':
         files = []
         for ext in ['/*.jpg', '/*.png']:
             files.extend(glob.glob(args.dir + ext))
         for file in files:
-            key = show_prediction(file, predictor)
+            key = show_prediction(file, predictor, args.scale)
             if key == ord('q'):
                 cv2.destroyAllWindows()
                 break
     else:
         dataset_dicts = get_detection_dataset_dicts(['bizcard_val'])
         for d in random.sample(dataset_dicts, 300):
-            key = show_prediction(d['file_name'], predictor)
+            key = show_prediction(d['file_name'], predictor, args.scale)
             if key == ord('q'):
                 cv2.destroyAllWindows()
                 break
 
 
-def show_prediction(img_file, predictor):
+def show_prediction(img_file, predictor, scale):
     im = cv2.imread(img_file)
     outputs = predictor(im)
     v = Visualizer(im[:, :, ::-1],
                    metadata=MetadataCatalog.get('bizcard_val'),
-                   scale=0.4,
+                   scale=scale,
                    instance_mode=ColorMode.IMAGE_BW  # remove the colors of unsegmented pixels
                    )
     v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
@@ -85,6 +74,7 @@ if __name__ == "__main__":
     parser = default_argument_parser()
     parser.add_argument('--img', default='', type=str)
     parser.add_argument('--dir', default='', type=str)
+    parser.add_argument('--scale', default=0.4, type=float)
     args = parser.parse_args()
     print("Command Line Args:", args)
     launch(

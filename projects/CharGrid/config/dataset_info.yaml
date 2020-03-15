@@ -1,0 +1,10 @@
+DATASET:
+  BIZCARD:
+    TRAIN:
+      NAME: "bizcard_train"
+      IMAGE_DIR: "/data/training/business_card/input/source_images"
+      COCO_GT: "data/coco_format/bizcard_coco_train.json"
+    VAL:
+      NAME: "bizcard_val"
+      IMAGE_DIR: "/data/training/business_card/input/source_images"
+      COCO_GT: "data/coco_format/bizcard_coco_val.json"

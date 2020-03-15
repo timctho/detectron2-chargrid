@@ -8,7 +8,7 @@ from detectron2.data import build_detection_test_loader, build_detection_train_l
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from detectron2.evaluation import COCOEvaluator, DatasetEvaluators, verify_results
 from detectron2.utils.logger import setup_logger
-from detectron2.data.datasets import register_coco_instances
+import data
 
 
 class Trainer(DefaultTrainer):
@@ -32,9 +32,6 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
-
-    register_coco_instances("bizcard_train", {}, "data/bizcard_coco_train.json", "/data/training/business_card/input/source_images")
-    register_coco_instances("bizcard_val", {}, "data/bizcard_coco_val.json", "/data/training/business_card/input/source_images")
 
     if args.eval_only:
         model = Trainer.build_model(cfg)

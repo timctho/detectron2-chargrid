@@ -16,6 +16,7 @@ from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 from data.data_reader import BIZCARD_LABEL_MAP
 import logging
+import data
 
 
 def setup(args):
@@ -33,17 +34,6 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
-
-    register_coco_instances(
-        "bizcard_train",
-        {},
-        "data/bizcard_coco_train.json",
-        "/data/training/business_card/input/source_images")
-    register_coco_instances(
-        "bizcard_val",
-        {'thing_classes': list(BIZCARD_LABEL_MAP.keys())},
-        "data/bizcard_coco_val.json",
-        "/data/training/business_card/input/source_images")
 
     predictor = DefaultPredictor(cfg)
     evaluator = COCOEvaluator("bizcard_val", cfg, False, cfg.OUTPUT_DIR)
