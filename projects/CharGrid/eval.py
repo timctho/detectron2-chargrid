@@ -18,24 +18,47 @@ from data.data_reader import BIZCARD_LABEL_MAP
 import logging
 
 
-if __name__ == '__main__':
+def setup(args):
     logging.basicConfig(level=logging.DEBUG)
     cfg = get_cfg()
-    cfg.merge_from_file('config/mask_rcnn_R50_FPN_3x.yaml')
+    cfg.merge_from_file(args.config_file)
+
+    cfg.DATALOADER.NUM_WORKERS = 8
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-    cfg.DATALOADER.NUM_WORKERS = 8
+    cfg.merge_from_list(args.opts)
     cfg.freeze()
+    return cfg
 
-    register_coco_instances("bizcard_train", {}, "data/bizcard_coco_train.json",
-                            "/data/training/business_card/input/source_images")
-    register_coco_instances("bizcard_val", {'things_classes': list(BIZCARD_LABEL_MAP.keys())}, "data/bizcard_coco_val_sanity.json",
-                            "/data/training/business_card/input/source_images")
 
-    dataset_dicts = get_detection_dataset_dicts(['bizcard_val'])
+def main(args):
+    cfg = setup(args)
+
+    register_coco_instances(
+        "bizcard_train",
+        {},
+        "data/bizcard_coco_train.json",
+        "/data/training/business_card/input/source_images")
+    register_coco_instances(
+        "bizcard_val",
+        {'things_classes': list(BIZCARD_LABEL_MAP.keys())},
+        "data/bizcard_coco_val.json",
+        "/data/training/business_card/input/source_images")
 
     predictor = DefaultPredictor(cfg)
-
     evaluator = COCOEvaluator("bizcard_val", cfg, False, cfg.OUTPUT_DIR)
     val_loader = build_detection_test_loader(cfg, "bizcard_val")
     inference_on_dataset(predictor.model, val_loader, evaluator)
+
+
+if __name__ == "__main__":
+    args = default_argument_parser().parse_args()
+    print("Command Line Args:", args)
+    launch(
+        main,
+        args.num_gpus,
+        num_machines=args.num_machines,
+        machine_rank=args.machine_rank,
+        dist_url=args.dist_url,
+        args=(args,),
+    )
