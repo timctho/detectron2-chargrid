@@ -37,13 +37,15 @@ def main(args):
     cfg = setup(args)
 
     predictor = DefaultPredictor(cfg)
-    evaluator = COCOEvaluator("bizcard_val", cfg, False, cfg.OUTPUT_DIR)
-    val_loader = build_detection_test_loader(cfg, "bizcard_val")
+    evaluator = COCOEvaluator(args.dataset, cfg, False, cfg.OUTPUT_DIR)
+    val_loader = build_detection_test_loader(cfg, args.dataset)
     inference_on_dataset(predictor.model, val_loader, evaluator)
 
 
 if __name__ == "__main__":
-    args = default_argument_parser().parse_args()
+    parser = default_argument_parser()
+    parser.add_argument('--dataset', default='bizcard_val')
+    args = parser.parse_args()
     print("Command Line Args:", args)
     launch(
         main,
