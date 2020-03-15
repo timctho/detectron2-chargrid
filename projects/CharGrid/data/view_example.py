@@ -51,16 +51,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.coco:
-        register_coco_instances("bizcard_train", {}, "bizcard_coco_train.json",
-                                "/data/training/business_card/input/source_images")
-        register_coco_instances("bizcard_val", {}, "bizcard_coco_train.json",
-                                "/data/training/business_card/input/source_images")
-        for d in random.sample(get_detection_dataset_dicts(['my_dataset_train']), 3):
+        for d in random.sample(get_detection_dataset_dicts(['bizcard_train']), 300):
             img = cv2.imread(d["file_name"])
-            visualizer = Visualizer(img[:, :, ::-1], metadata=MetadataCatalog.get('my_dataset_train'), scale=0.2)
+            visualizer = Visualizer(img[:, :, ::-1], metadata=MetadataCatalog.get('bizcard_train'), scale=0.2)
             vis = visualizer.draw_dataset_dict(d)
             cv2.imshow('', vis.get_image()[:, :, ::-1])
-            cv2.waitKey(0)
+            key = cv2.waitKey(0)
+            if key == ord('q'):
+                cv2.destroyAllWindows()
+                break
     else:
         view_gt_dir(
             Path('/data/training/business_card/input/source_images'),

@@ -40,12 +40,14 @@ def convert_bizcard_to_coco_format(image_dir, json_dir, id_list, out_dir, out_na
         })
 
         try:
-            gt = BizcardDataParser.parse_data(str((json_dir / file_id).with_suffix('.json')), str(image_dir / file_id))[0]
+            gt = BizcardDataParser.parse_data(str((json_dir / file_id).with_suffix('.json')), str(image_dir / file_id))[
+                0]
             for word in gt.words:
                 anno = {
                     'id': len(annotations),
                     'image_id': idx,
-                    'bbox': [word.bbox.min_x, word.bbox.min_y, (word.bbox.max_x - word.bbox.min_x), (word.bbox.max_y - word.bbox.min_y)],
+                    'bbox': [word.bbox.min_x, word.bbox.min_y, (word.bbox.max_x - word.bbox.min_x),
+                             (word.bbox.max_y - word.bbox.min_y)],
                     'segmentation': [word.bbox.val],
                     'category_id': word.label,
                     'iscrowd': 0,
@@ -71,13 +73,6 @@ if __name__ == '__main__':
     parser.add_argument('--out_dir', type=str)
     parser.add_argument('--out_name', type=str)
     args = parser.parse_args()
-
-    # convert_bizcard_to_coco_format(
-    #     Path('/data/training/business_card/input/source_images'),
-    #     Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
-    #     '/data/training/business_card/input/id_lists/20191219/validation.txt',
-    #     '',
-    #     'bizcard_coco_val.json')
 
     if not Path(args.out_dir).exists():
         Path(args.out_dir).mkdir()
