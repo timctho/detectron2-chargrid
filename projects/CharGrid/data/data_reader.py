@@ -449,9 +449,9 @@ if __name__ == '__main__':
     #     cv2.imshow('', vis.get_image()[:, :, ::-1])
     #     cv2.waitKey(0)
 
-    # convert_bizcard_to_coco_format(Path('/data/training/business_card/input/source_images'),
-    #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
-    #             '/data/training/business_card/input/id_lists/20200206/train.txt', '', 'bizcard_coco.json')
+    convert_bizcard_to_coco_format(Path('/data/training/business_card/input/source_images'),
+                Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
+                '/data/training/business_card/input/id_lists/20191219/validation.txt', '', 'bizcard_coco_val.json')
 
     # view_gt_dir(Path('/data/training/business_card/input/source_images'),
     #             Path('/data/training/business_card/input/ocr_and_ground_truth/OneOCR_GA-0.1.0/Bizcard'),
@@ -463,8 +463,8 @@ if __name__ == '__main__':
     # from detectron2.utils.visualizer import Visualizer
     # from detectron2.data import DatasetCatalog, MetadataCatalog
     #
-    # register_coco_instances("my_dataset_train", {}, "bizcard_coco.json", "/data/training/business_card/input/source_images")
-    # register_coco_instances("my_dataset_val", {}, "bizcard_coco.json", "/data/training/business_card/input/source_images")
+    # register_coco_instances("my_dataset_train", {}, "bizcard_coco_train.json", "/data/training/business_card/input/source_images")
+    # register_coco_instances("my_dataset_val", {}, "bizcard_coco_train.json", "/data/training/business_card/input/source_images")
     # for d in random.sample(get_detection_dataset_dicts(['my_dataset_train']), 3):
     #     img = cv2.imread(d["file_name"])
     #     visualizer = Visualizer(img[:, :, ::-1], metadata=MetadataCatalog.get('my_dataset_train'), scale=0.2)
@@ -478,5 +478,5 @@ if __name__ == '__main__':
     # image = image.convert('RGB')
     # image = np.asarray(image)
     # print(image.shape)
-    image = cv2.imread('/data/training/business_card/input/source_images/000/Bizcard_000_273.jpg')
-    print(image.shape)
+    # image = cv2.imread('/data/training/business_card/input/source_images/000/Bizcard_000_273.jpg')
+    # print(image.shape)
